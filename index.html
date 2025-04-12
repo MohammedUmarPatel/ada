@@ -1,3 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selection Sort Visualization</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #2c3e50;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-weight: 300;
+            color: #3498db;
+            text-align: center;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .visualization {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 300px;
+            margin: 20px 0;
+            gap: 4px;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        .bar {
+            background-color: #3498db;
+            border-radius: 6px 6px 0 0;
+            transition: height 0.3s ease, background-color 0.3s ease;
+            position: relative;
+            min-width: 10px;
+            flex-grow: 1;
+            max-width: 40px;
+        }
+
+        .bar::after {
+            content: attr(data-value);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+        }
+
+        .current {
+            background-color: #e74c3c;
+        }
+
+        .min {
+            background-color: #2ecc71;
+        }
+
+        .sorted {
+            background-color: #9b59b6;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .explanation {
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        #iteration-counter {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        #message {
+            text-align: center;
+            min-height: 24px;
+            margin-top: 10px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        /* New styles for custom input */
+        .input-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #custom-array-input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #c3cfe2;
+            font-size: 16px;
+            min-width: 200px;
+        }
+
+        .input-example {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .authors {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: 500;
+            color: #3498db;
+        }
+
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #3498db;
+            margin: 10px 0;
+        }
+
+        .time-complexity {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            gap: 10px;
+        }
+
+        .complexity-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .complexity-item h4 {
+            margin-top: 0;
+            color: #3498db;
+        }
+
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+
+            .visualization {
+                height: 200px;
+            }
+            
+            .input-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Selection Sort Visualization</h1>
+        
+        <div class="authors">
+            <p>MOHAMMED UMAR PATEL (3PD23CS075) <br> MOHAMMED OMAR KHASDAR (3PD23CS074)</p>
+        </div>
+
+        <div class="input-section">
+            <h3>Array Input</h3>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="array-source" value="random" checked>
+                    Random Array
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="array-source" value="custom">
+                    Custom Input
+                </label>
+            </div>
+            
+            <div class="input-container" id="custom-input-container" style="display: none;">
+                <input type="text" id="custom-array-input" placeholder="Enter numbers separated by commas (e.g., 5,2,9,1,5,6)">
+                <button id="apply-custom">Apply</button>
+                <div class="input-example">Example: 64, 25, 12, 22, 11</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="generate">Generate New Array</button>
+            <button id="start">Start Sorting</button>
+            <button id="pause" disabled>Pause</button>
+            <button id="reset">Reset</button>
+            <div id="speed-control">
+                <label for="speed">Speed:</label>
+                <input type="range" id="speed" min="1" max="10" value="5">
+            </div>
+        </div>
+
+        <div id="message"></div>
+        <div class="visualization" id="visualization"></div>
+        <div id="iteration-counter">Iteration: 0 / 0</div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #3498db;"></div>
+                <span>Unsorted</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #e74c3c;"></div>
+                <span>Current Position</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #2ecc71;"></div>
+                <span>Current Minimum</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #9b59b6;"></div>
+                <span>Sorted</span>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>How Selection Sort Works</h3>
+            <p>Selection Sort divides the array into two parts:</p>
+            <ol>
+                <li>A sorted subarray which is built from left to right</li>
+                <li>An unsorted subarray containing the remaining elements</li>
+            </ol>
+            <p>In each iteration, the algorithm finds the smallest element from the unsorted subarray and swaps it with the leftmost unsorted element, moving the boundary between sorted and unsorted subarrays one element to the right.</p>
+            
+            <h3>Algorithm (Pseudocode)</h3>
+            <div class="code-block">
+                <pre>
+SELECTION-SORT(A)
+1. n = length of A
+2. for i = 0 to n-2
+3.     min_idx = i
+4.     for j = i+1 to n-1
+5.         if A[j] < A[min_idx]
+6.             min_idx = j
+7.     if min_idx != i
+8.         swap A[i] with A[min_idx]
+                </pre>
+            </div>
+
+            <div class="time-complexity">
+                <div class="complexity-item">
+                    <h4>Worst Case</h4>
+                    <p>O(n²)</p>
+                    <small>When array is in reverse order</small>
+                </div>
+                <div class="complexity-item">
+                    <h4>Best Case</h4>
+                    <p>O(n²)</p>
+                    <small>Even with sorted array</small>
+                </div>
+                <div class="complexity-item">
+                    <h4>Average Case</h4>
+                    <p>O(n²)</p>
+                    <small>For random input arrays</small>
+                </div>
+            </div>
+
+            <p><strong>Space Complexity:</strong> O(1) - In-place sorting algorithm</p>
+            <p><strong>Stability:</strong> Not stable - Equal elements may change their relative positions</p>
+            <p><strong>Adaptivity:</strong> Not adaptive - Performance doesn't improve for partially sorted arrays</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const visualizationContainer = document.getElementById('visualization');
+        const generateBtn = document.getElementById('generate');
+        const startBtn = document.getElementById('start');
+        const pauseBtn = document.getElementById('pause');
+        const resetBtn = document.getElementById('reset');
+        const speedSlider = document.getElementById('speed');
+        const iterationCounter = document.getElementById('iteration-counter');
+        const messageDisplay = document.getElementById('message');
+        const arraySourceRadios = document.getElementsByName('array-source');
+        const customInputContainer = document.getElementById('custom-input-container');
+        const customArrayInput = document.getElementById('custom-array-input');
+        const applyCustomBtn = document.getElementById('apply-custom');
+
+        // Variables
+        let array = [];
+        let arraySize = 15;
+        let maxValue = 100;
+        let sortingInProgress = false;
+        let isPaused = false;
+        let animationSpeed = 500;
+        let sortingInterval;
+        let currentStep = 0;
+        let totalSteps = 0;
+        let sortingSteps = [];
+
+        // Initialize
+        window.addEventListener('load', () => {
+            generateArray();
+            updateSpeedFromSlider();
+            setupInputToggle();
+        });
+
+        // Event Listeners
+        generateBtn.addEventListener('click', generateArray);
+        startBtn.addEventListener('click', startSorting);
+        pauseBtn.addEventListener('click', togglePause);
+        resetBtn.addEventListener('click', resetVisualization);
+        speedSlider.addEventListener('input', updateSpeedFromSlider);
+        applyCustomBtn.addEventListener('click', applyCustomArray);
+
+        // Setup input toggle
+        function setupInputToggle() {
+            arraySourceRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'custom') {
+                        customInputContainer.style.display = 'flex';
+                        generateBtn.disabled = true;
+                    } else {
+                        customInputContainer.style.display = 'none';
+                        generateBtn.disabled = false;
+                    }
+                });
+            });
+        }
+
+        // Apply custom array
+        function applyCustomArray() {
+            const input = customArrayInput.value.trim();
+            if (!input) {
+                messageDisplay.textContent = 'Please enter numbers separated by commas.';
+                return;
+            }
+
+            try {
+                // Parse input and convert to numbers
+                const customArray = input.split(',')
+                    .map(item => item.trim())
+                    .filter(item => item !== '')
+                    .map(item => {
+                        const num = Number(item);
+                        if (isNaN(num)) {
+                            throw new Error(`"${item}" is not a valid number.`);
+                        }
+                        return num;
+                    });
+
+                if (customArray.length < 2) {
+                    messageDisplay.textContent = 'Please enter at least 2 numbers.';
+                    return;
+                }
+
+                if (customArray.length > 30) {
+                    messageDisplay.textContent = 'Please enter at most 30 numbers for better visualization.';
+                    return;
+                }
+
+                clearVisualization();
+                array = customArray;
+                renderArray();
+                resetBtn.disabled = false;
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                messageDisplay.textContent = 'Custom array applied! Click "Start Sorting" to begin.';
+            } catch (error) {
+                messageDisplay.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Generate a random array
+        function generateArray() {
+            clearVisualization();
+            array = [];
+            for (let i = 0; i < arraySize; i++) {
+                array.push(Math.floor(Math.random() * maxValue) + 1);
+            }
+            renderArray();
+            resetBtn.disabled = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            messageDisplay.textContent = 'Array generated! Click "Start Sorting" to begin.';
+        }
+
+        // Render the array as bars
+        function renderArray() {
+            visualizationContainer.innerHTML = '';
+            const maxHeight = 250;
+            const maxArrayValue = Math.max(...array);
+
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                const height = (value / maxArrayValue) * maxHeight;
+
+                bar.className = 'bar';
+                bar.style.height = `${height}px`;
+                bar.dataset.value = value;
+
+                visualizationContainer.appendChild(bar);
+            });
+
+            updateIterationCounter(0, 0);
+        }
+
+        // Clear the visualization
+        function clearVisualization() {
+            visualizationContainer.innerHTML = '';
+            stopSorting();
+            sortingSteps = [];
+            currentStep = 0;
+        }
+
+        // Generate steps for selection sort
+        function generateSelectionSortSteps() {
+            const steps = [];
+            const n = array.length;
+            const arrayCopy = [...array];
+
+            for (let i = 0; i < n - 1; i++) {
+                // Mark current position
+                steps.push({
+                    array: [...arrayCopy],
+                    current: i,
+                    min: i,
+                    compare: null,
+                    sorted: Array(i).fill(true),
+                    message: `Starting iteration ${i+1}. Finding minimum in unsorted portion.`
+                });
+
+                let minIndex = i;
+
+                for (let j = i + 1; j < n; j++) {
+                    // Compare current minimum with j
+                    steps.push({
+                        array: [...arrayCopy],
+                        current: i,
+                        min: minIndex,
+                        compare: j,
+                        sorted: Array(i).fill(true),
+                        message: `Comparing ${arrayCopy[j]} with current minimum ${arrayCopy[minIndex]}`
+                    });
+
+                    // Update minimum if needed
+                    if (arrayCopy[j] < arrayCopy[minIndex]) {
+                        minIndex = j;
+                        steps.push({
+                            array: [...arrayCopy],
+                            current: i,
+                            min: minIndex,
+                            compare: null,
+                            sorted: Array(i).fill(true),
+                            message: `Found new minimum ${arrayCopy[minIndex]} at position ${minIndex}`
+                        });
+                    }
+                }
+
+                // Swap if needed
+                if (minIndex !== i) {
+                    steps.push({
+                        array: [...arrayCopy],
+                        current: i,
+                        min: minIndex,
+                        swap: true,
+                        sorted: Array(i).fill(true),
+                        message: `Swapping ${arrayCopy[i]} and ${arrayCopy[minIndex]}`
+                    });
+
+                    // Perform swap
+                    [arrayCopy[i], arrayCopy[minIndex]] = [arrayCopy[minIndex], arrayCopy[i]];
+                } else {
+                    steps.push({
+                        array: [...arrayCopy],
+                        current: i,
+                        min: minIndex,
+                        message: `Element ${arrayCopy[i]} is already in correct position`,
+                        sorted: Array(i).fill(true)
+                    });
+                }
+
+                // Mark as sorted
+                steps.push({
+                    array: [...arrayCopy],
+                    current: null,
+                    min: null,
+                    sorted: Array(i+1).fill(true),
+                    message: `Element ${arrayCopy[i]} sorted at position ${i}`
+                });
+            }
+
+            // Final sorted array
+            steps.push({
+                array: [...arrayCopy],
+                current: null,
+                min: null,
+                sorted: Array(n).fill(true),
+                message: 'Sorting complete!'
+            });
+
+            return steps;
+        }
+
+        // Start sorting
+        function startSorting() {
+            if (sortingInProgress && isPaused) {
+                resumeSorting();
+                return;
+            }
+
+            if (sortingInProgress) return;
+
+            sortingSteps = generateSelectionSortSteps();
+            totalSteps = sortingSteps.length;
+            currentStep = 0;
+
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            generateBtn.disabled = true;
+            applyCustomBtn.disabled = true;
+            arraySourceRadios.forEach(radio => radio.disabled = true);
+
+            sortingInProgress = true;
+            isPaused = false;
+
+            // Start the animation
+            updateIterationCounter(currentStep, totalSteps);
+            animateStep();
+        }
+
+        // Animate a step of the sorting
+        function animateStep() {
+            if (currentStep >= sortingSteps.length) {
+                stopSorting();
+                messageDisplay.textContent = 'Sorting complete!';
+                return;
+            }
+
+            renderStep(sortingSteps[currentStep]);
+            currentStep++;
+
+            updateIterationCounter(currentStep, totalSteps);
+
+            if (!isPaused) {
+                sortingInterval = setTimeout(animateStep, animationSpeed);
+            }
+        }
+
+        // Render a specific step
+        function renderStep(step) {
+            const bars = document.querySelectorAll('.bar');
+
+            bars.forEach((bar, index) => {
+                // Reset classes
+                bar.className = 'bar';
+
+                // Apply appropriate classes
+                if (step.sorted && step.sorted[index]) {
+                    bar.classList.add('sorted');
+                }
+                if (index === step.current) {
+                    bar.classList.add('current');
+                }
+                if (index === step.min) {
+                    bar.classList.add('min');
+                }
+                if (index === step.compare) {
+                    bar.classList.add('compare');
+                }
+
+                // Set bar height based on array values
+                const maxArrayValue = Math.max(...step.array);
+                const height = (step.array[index] / maxArrayValue) * 250;
+                bar.style.height = `${height}px`;
+                bar.dataset.value = step.array[index];
+            });
+
+            // Update message
+            messageDisplay.textContent = step.message || '';
+        }
+
+        // Toggle pause/resume
+        function togglePause() {
+            if (!sortingInProgress) return;
+
+            isPaused = !isPaused;
+
+            if (isPaused) {
+                clearTimeout(sortingInterval);
+                pauseBtn.textContent = 'Resume';
+                messageDisplay.textContent = 'Sorting paused. Click Resume to continue.';
+            } else {
+                pauseBtn.textContent = 'Pause';
+                messageDisplay.textContent = sortingSteps[currentStep-1]?.message || '';
+                animateStep();
+            }
+        }
+
+        // Resume sorting
+        function resumeSorting() {
+            if (!sortingInProgress || !isPaused) return;
+
+            isPaused = false;
+            pauseBtn.textContent = 'Pause';
+            animateStep();
+        }
+
+        // Stop sorting
+        function stopSorting() {
+            sortingInProgress = false;
+            isPaused = false;
+            clearTimeout(sortingInterval);
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            
             // Re-enable input controls
             const selectedSource = Array.from(arraySourceRadios).find(radio => radio.checked).value;
             generateBtn.disabled = selectedSource === 'custom';
